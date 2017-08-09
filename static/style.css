@@ -9,11 +9,11 @@
 body {
     font-family: Arial;
     padding: 50px;
+    background-color: #3498DB;
 }
 .login {
     margin: 20px auto;
     width: 300px;
-    background-color: #3498DB;
 }
 .login-screen {
     background-color: #FFF;

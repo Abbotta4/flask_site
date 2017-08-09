@@ -24,12 +24,13 @@ def do_admin_login():
     s = Session()
     query = s.query(User).filter(User.username.in_([POST_USERNAME]))
     result = query.first()
-    accept = pbkdf2_sha256.verify(POST_PASSWORD, result.password)
-    if result and accept:
-        session['logged_in'] = True
-        session['username'] = POST_USERNAME
-    else:
-        flash('Invalid credentials')
+    if result:
+        accept = pbkdf2_sha256.verify(POST_PASSWORD, result.password)
+        if accept:
+            session['logged_in'] = True
+            session['username'] = POST_USERNAME
+            return home()
+    flash('Invalid credentials')
     return home()
 
 @app.route('/logout')
