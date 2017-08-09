@@ -10,7 +10,6 @@ app = Flask(__name__)
 @app.route('/')
 def home():
     if not session.get('logged_in'):
-        flash('You are not logged in')
         return render_template('login.html')
     else:
         return "Logged in as %s <a href='/logout'>Logout</a>" % (session['username'])
@@ -29,7 +28,6 @@ def do_admin_login():
     if result and accept:
         session['logged_in'] = True
         session['username'] = POST_USERNAME
-        flash('Welcome, %s' % POST_USERNAME)
     else:
         flash('Invalid credentials')
     return home()
