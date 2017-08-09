@@ -17,6 +17,13 @@ class User(Base):
         """"""
         self.username = username
         self.password = password
-        
+
+class OTP(Base):
+    """"""
+    __tablename__ = "otp"
+
+    id = Column(Integer, primary_key=True)
+    otp = Column(String)
+
 # create tables
 Base.metadata.create_all(engine)
