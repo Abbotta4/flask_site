@@ -9,7 +9,7 @@ app = Flask(__name__)
 @app.route('/')
 def home():
     if not session.get('logged_in'):
-        return render_template('login.html')
+        return render_template('index.html')
     else:
         return "Logged in as %s <a href='/logout'>Logout</a>" % (session['username'])
 
