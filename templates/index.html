@@ -1,8 +1,9 @@
 {% extends "layout.html" %}
 {% block body %}
-<head>    
+<head>
+  <script type=text/javascript>$SCRIPT_ROOT = {{ request.script_root|tojson|safe }};</script>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-  <script src="js/code.js"></script>
+  <script src="/static/code.js"></script>
 </head>
 <body>
   <div id="footer">
