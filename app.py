@@ -1,4 +1,4 @@
-import os
+from os import urandom
 from flask import Flask, flash, redirect, render_template, request, session, abort
 from sqlalchemy.orm import sessionmaker
 from tabledef import *
@@ -69,5 +69,5 @@ def register():
         return render_template('register.html')
 
 if __name__ == '__main__':
-    app.secret_key = os.urandom(12)
-    app.run(debug=True,host='0.0.0.0', port=5000)
+    app.secret_key = urandom(12)
+    app.run(host='0.0.0.0')
