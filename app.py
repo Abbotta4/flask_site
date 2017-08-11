@@ -1,5 +1,5 @@
 from os import urandom
-from flask import Flask, flash, redirect, render_template, request, session, abort
+from flask import Flask, flash, redirect, render_template, request, session, abort, url_for
 from sqlalchemy.orm import sessionmaker
 from tabledef import *
 from passlib.hash import pbkdf2_sha256
@@ -27,14 +27,14 @@ def do_login():
         if accept:
             session['logged_in'] = True
             session['username'] = POST_USERNAME
-            return home()
+            return redirect(url_for('home'))
     flash('Invalid credentials')
-    return home()
+    return redirect(url_for('home'))
 
 @app.route('/logout')
 def logout():
     session['logged_in'] = False
-    return home()
+    return redirect(url_for('home'))
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -58,7 +58,7 @@ def register():
                     session['logged_in'] = True
                     session['username'] = POST_USERNAME
                     s.commit()
-                    return home()
+                    return redirect(url_for('home'))
                 else:
                     flash('Username already in use')
                     return render_template('register.html')
