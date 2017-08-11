@@ -5,6 +5,7 @@ from tabledef import *
 from passlib.hash import pbkdf2_sha256
 
 app = Flask(__name__)
+app.secret_key = urandom(12)
 
 @app.route('/')
 def home():
@@ -43,7 +44,7 @@ def register():
         POST_USERNAME = str(request.form['username'])
         POST_PASSWORD = str(request.form['password'])
         POST_OTP = str(request.form['otp'])
-        
+
         Session = sessionmaker(bind=engine)
         s = Session()
         query = s.query(OTP).filter(OTP.otp != None)
@@ -69,5 +70,4 @@ def register():
         return render_template('register.html')
 
 if __name__ == '__main__':
-    app.secret_key = urandom(12)
     app.run(host='0.0.0.0')
