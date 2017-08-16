@@ -1,29 +1,29 @@
-from sqlalchemy import *
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship, backref
+from flask import Flask
+from flask_sqlalchemy import SQLAlchemy
 
-engine = create_engine('postgresql://postgres:postgres@localhost/tutorial', echo=True)
-Base = declarative_base()
+db = SQLAlchemy()
 
-class User(Base):
+class User(db.Model):
     """"""
     __tablename__ = "users"
     
-    id = Column(Integer, primary_key=True)
-    username = Column(String)
-    password = Column(String)
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String)
+    password = db.Column(db.String)
 
     def __init__(self, username, password):
         """"""
         self.username = username
         self.password = password
 
-class OTP(Base):
+class OTP(db.Model):
     """"""
     __tablename__ = "otp"
 
-    id = Column(Integer, primary_key=True)
-    otp = Column(String)
+    id = db.Column(db.Integer, primary_key=True)
+    otp = db.Column(db.String)
 
-# create tables
-Base.metadata.create_all(engine)
+if __name__ == 'main':
+    app = Flask(__name__)
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:postgres@localhost/tutorial'
+    db.create_all()

@@ -1,11 +1,13 @@
 from os import urandom
 from flask import Flask, flash, redirect, render_template, request, session, abort, url_for
-from sqlalchemy.orm import sessionmaker
-from tabledef import *
+from tabledef import db, User, OTP
 from passlib.hash import pbkdf2_sha256
 
 app = Flask(__name__)
 app.secret_key = urandom(12)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:postgres@localhost/tutorial'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db.init_app(app)
 
 @app.route('/')
 def home():
@@ -40,18 +42,16 @@ def logout():
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        print 'aye, she be POST'
-        POST_USERNAME = str(request.form['username'])
-        POST_PASSWORD = str(request.form['password'])
-        POST_OTP = str(request.form['otp'])
+        username = request.form['username']
+        password = request.form['password']
+        password_confirm = request.form['password_confirm']
+        if password != password_confirm:
+            flash('Passwords do not match')
+            redirect(url_for('home'))
 
-        Session = sessionmaker(bind=engine)
-        s = Session()
-        query = s.query(OTP).filter(OTP.otp != None)
-        otplist = query.all()
         for f in otplist:
-            if pbkdf2_sha256.verify(POST_OTP, f.otp):
-                query = s.query(User).filter(User.username.in_([POST_USERNAME]))
+            if pbkdf2_sha256.verify(, f.otp):
+                query = s.query(User).filter(User.username == [POST_USERNAME])
                 exist = query.first()
                 if not exist:
                     s.query(OTP).filter(OTP.otp == f.otp).delete()
@@ -64,10 +64,13 @@ def register():
                     flash('Username already in use')
                     return render_template('register.html')
         flash('Invalid OTP')
-        return render_template('register.html')
+        return redirect(url_for('home'))
     else:
-        'Nay, she be GETtin'
-        return render_template('register.html')
+        otplist = OTP.query.all()
+        for f in otplist:
+            
+        if request.args['otp'] == 'test':
+            return render_template('register.html')
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0')
