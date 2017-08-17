@@ -5,7 +5,7 @@
 <p>You're logged in already!</p>
 {% else %}
 
-<form action="/register" method="POST">
+<form action="" method="POST">
   <div class="login">
     <div class="login-screen">
       <div class="app-title">
@@ -24,10 +24,10 @@
 	</div>
 
 	<div class="control-group">
-	  <input type="otp" class="login-field" value="" placeholder="OTP" name="otp">
-	  <label class="login-field-icon fui-lock" for="login-otp"></label>
+	  <input type="password" class="login-field" value="" placeholder="confirm password" name="password_confirm">
+	  <label class="login-field-icon fui-lock" for="login-pass"></label>
 	</div>
-	
+
 	<input type="submit" value="Register" class="btn btn-primary btn-large btn-block" >
 	<br>
       </div>

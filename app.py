@@ -1,11 +1,13 @@
 from os import urandom
 from flask import Flask, flash, redirect, render_template, request, session, abort, url_for
-from sqlalchemy.orm import sessionmaker
-from tabledef import *
+from tabledef import db, User, OTP
 from passlib.hash import pbkdf2_sha256
 
 app = Flask(__name__)
 app.secret_key = urandom(12)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:postgres@localhost/tutorial'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db.init_app(app)
 
 @app.route('/')
 def home():
@@ -16,18 +18,16 @@ def home():
 
 @app.route('/login', methods=['POST'])
 def do_login():
-    POST_USERNAME = str(request.form['username'])
-    POST_PASSWORD = str(request.form['password'])
+    username = request.form['username']
+    password = request.form['password']
 
-    Session = sessionmaker(bind=engine)
-    s = Session()
-    query = s.query(User).filter(User.username.in_([POST_USERNAME]))
+    query = User.query.filter_by(username=username)
     result = query.first()
     if result:
-        accept = pbkdf2_sha256.verify(POST_PASSWORD, result.password)
+        accept = pbkdf2_sha256.verify(password, result.password)
         if accept:
             session['logged_in'] = True
-            session['username'] = POST_USERNAME
+            session['username'] = username
             return redirect(url_for('home'))
     flash('Invalid credentials')
     return redirect(url_for('home'))
@@ -37,37 +37,29 @@ def logout():
     session['logged_in'] = False
     return redirect(url_for('home'))
 
-@app.route('/register', methods=['GET', 'POST'])
+@app.route('/register', methods=['POST', 'GET'])
 def register():
-    if request.method == 'POST':
-        print 'aye, she be POST'
-        POST_USERNAME = str(request.form['username'])
-        POST_PASSWORD = str(request.form['password'])
-        POST_OTP = str(request.form['otp'])
-
-        Session = sessionmaker(bind=engine)
-        s = Session()
-        query = s.query(OTP).filter(OTP.otp != None)
-        otplist = query.all()
-        for f in otplist:
-            if pbkdf2_sha256.verify(POST_OTP, f.otp):
-                query = s.query(User).filter(User.username.in_([POST_USERNAME]))
-                exist = query.first()
-                if not exist:
-                    s.query(OTP).filter(OTP.otp == f.otp).delete()
-                    s.add(User(POST_USERNAME, pbkdf2_sha256.hash(POST_PASSWORD)))
-                    session['logged_in'] = True
-                    session['username'] = POST_USERNAME
-                    s.commit()
-                    return redirect(url_for('home'))
-                else:
-                    flash('Username already in use')
-                    return render_template('register.html')
-        flash('Invalid OTP')
-        return render_template('register.html')
+    for otp in OTP.query:
+        if pbkdf2_sha256.verify(request.args['otp'], otp.otp):
+            break
     else:
-        'Nay, she be GETtin'
+        flash('Invalid OTP')
+        return redirect(url_for('home'))
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        password_confirm = request.form['password_confirm']
+        if password != password_confirm:
+            flash('Passwords do not match')
+            return render_template('register.html')
+        db.session.delete(otp)
+        db.session.add(User(username, pbkdf2_sha256.hash(password)))
+        session['logged_in'] = True
+        session['username'] = username
+        db.session.commit()
+        return redirect(url_for('home'))
+    else:
         return render_template('register.html')
-
+                                                                                    
 if __name__ == '__main__':
-    app.run(host='0.0.0.0')
+    app.run(host='0.0.0.0', debug=True)
