@@ -39,26 +39,27 @@ def logout():
 
 @app.route('/register', methods=['POST', 'GET'])
 def register():
+    for otp in OTP.query:
+        if pbkdf2_sha256.verify(request.args['otp'], otp.otp):
+            break
+    else:
+        flash('Invalid OTP')
+        return redirect(url_for('home'))
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
         password_confirm = request.form['password_confirm']
         if password != password_confirm:
             flash('Passwords do not match')
-            return redirect(url_for('home'))
+            return render_template('register.html')
+        db.session.delete(otp)
         db.session.add(User(username, pbkdf2_sha256.hash(password)))
         session['logged_in'] = True
         session['username'] = username
         db.session.commit()
         return redirect(url_for('home'))
     else:
-        otplist = OTP.query.all()
-        for f in otplist:
-            if pbkdf2_sha256.verify(request.args['otp'], f.otp):
-                db.session.delete(OTP.query.filter_by(otp=f.otp))
-                return render_template('register.html')
-        flash('Invalid OTP')
-        return redirect(url_for('home'))
-
+        return render_template('register.html')
+                                                                                    
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True)
