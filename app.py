@@ -18,18 +18,16 @@ def home():
 
 @app.route('/login', methods=['POST'])
 def do_login():
-    POST_USERNAME = str(request.form['username'])
-    POST_PASSWORD = str(request.form['password'])
+    username = request.form['username']
+    password = request.form['password']
 
-    Session = sessionmaker(bind=engine)
-    s = Session()
-    query = s.query(User).filter(User.username.in_([POST_USERNAME]))
+    query = User.query.filter_by(username=username)
     result = query.first()
     if result:
-        accept = pbkdf2_sha256.verify(POST_PASSWORD, result.password)
+        accept = pbkdf2_sha256.verify(password, result.password)
         if accept:
             session['logged_in'] = True
-            session['username'] = POST_USERNAME
+            session['username'] = username
             return redirect(url_for('home'))
     flash('Invalid credentials')
     return redirect(url_for('home'))
@@ -39,7 +37,7 @@ def logout():
     session['logged_in'] = False
     return redirect(url_for('home'))
 
-@app.route('/register', methods=['GET', 'POST'])
+@app.route('/register', methods=['POST', 'GET'])
 def register():
     if request.method == 'POST':
         username = request.form['username']
@@ -47,30 +45,20 @@ def register():
         password_confirm = request.form['password_confirm']
         if password != password_confirm:
             flash('Passwords do not match')
-            redirect(url_for('home'))
-
-        for f in otplist:
-            if pbkdf2_sha256.verify(, f.otp):
-                query = s.query(User).filter(User.username == [POST_USERNAME])
-                exist = query.first()
-                if not exist:
-                    s.query(OTP).filter(OTP.otp == f.otp).delete()
-                    s.add(User(POST_USERNAME, pbkdf2_sha256.hash(POST_PASSWORD)))
-                    session['logged_in'] = True
-                    session['username'] = POST_USERNAME
-                    s.commit()
-                    return redirect(url_for('home'))
-                else:
-                    flash('Username already in use')
-                    return render_template('register.html')
-        flash('Invalid OTP')
+            return redirect(url_for('home'))
+        db.session.add(User(username, pbkdf2_sha256.hash(password)))
+        session['logged_in'] = True
+        session['username'] = username
+        db.session.commit()
         return redirect(url_for('home'))
     else:
         otplist = OTP.query.all()
         for f in otplist:
-            
-        if request.args['otp'] == 'test':
-            return render_template('register.html')
+            if pbkdf2_sha256.verify(request.args['otp'], f.otp):
+                db.session.delete(OTP.query.filter_by(otp=f.otp))
+                return render_template('register.html')
+        flash('Invalid OTP')
+        return redirect(url_for('home'))
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0')
+    app.run(host='0.0.0.0', debug=True)
