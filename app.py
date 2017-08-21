@@ -2,6 +2,7 @@ from os import urandom
 from flask import Flask, flash, redirect, render_template, request, session, abort, url_for
 from tabledef import db, User, OTP
 from passlib.hash import pbkdf2_sha256
+from pathlib import Path
 
 app = Flask(__name__)
 app.secret_key = urandom(12)
@@ -14,6 +15,8 @@ def home():
     if not session.get('logged_in'):
         return render_template('index.html')
     else:
+        p = Path('/srv/downloads')
+        dfiles = list(p.glob('*'))
         return "Logged in as %s <a href='/logout'>Logout</a>" % (session['username'])
 
 @app.route('/login', methods=['POST'])
