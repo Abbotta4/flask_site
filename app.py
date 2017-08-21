@@ -1,6 +1,7 @@
 from os import urandom
 from flask import Flask, flash, redirect, render_template, request, session, abort, url_for
 from tabledef import db, User, OTP
+from wtform import MyForm
 from passlib.hash import pbkdf2_sha256
 from pathlib import Path
 
