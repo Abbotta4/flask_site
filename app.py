@@ -9,6 +9,8 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:postgres@localhos
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
 
+app.add_url_rule('/favicon.ico', redirect_to=url_for('static', filename='favicon.ico'))
+
 @app.route('/')
 def home():
     if not session.get('logged_in'):
@@ -60,6 +62,6 @@ def register():
         return redirect(url_for('home'))
     else:
         return render_template('register.html')
-                                                                                    
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True)
