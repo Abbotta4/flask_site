@@ -3,20 +3,20 @@ from flask import Flask, flash, redirect, render_template, request, session, abo
 from tabledef import db, User, OTP
 from passlib.hash import pbkdf2_sha256
 
-app = Flask(__name__)
-app.secret_key = urandom(12)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:postgres@localhost/tutorial'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-db.init_app(app)
+application = Flask(__name__)
+application.secret_key = urandom(12)
+application.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:postgres@localhost/tutorial'
+application.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db.init_app(application)
 
-@app.route('/')
+@application.route('/')
 def home():
     if not session.get('logged_in'):
         return render_template('index.html')
     else:
         return "Logged in as %s <a href='/logout'>Logout</a>" % (session['username'])
 
-@app.route('/login', methods=['POST'])
+@application.route('/login', methods=['POST'])
 def do_login():
     username = request.form['username']
     password = request.form['password']
@@ -32,12 +32,12 @@ def do_login():
     flash('Invalid credentials')
     return redirect(url_for('home'))
 
-@app.route('/logout')
+@application.route('/logout')
 def logout():
     session['logged_in'] = False
     return redirect(url_for('home'))
 
-@app.route('/register', methods=['POST', 'GET'])
+@application.route('/register', methods=['POST', 'GET'])
 def register():
     for otp in OTP.query:
         if pbkdf2_sha256.verify(request.args['otp'], otp.otp):
@@ -62,4 +62,4 @@ def register():
         return render_template('register.html')
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', debug=True)
+    application.run(host='0.0.0.0', debug=True)

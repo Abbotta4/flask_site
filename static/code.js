@@ -11,9 +11,6 @@ if (window.addEventListener) {
 		    $(loginTemplate).hide().appendTo('body').fadeIn(1000);
 //		    $('body').append(loginTemplate).fadeIn(1000);
 		});
-	    } else if (triggered == true) {
-		triggered = false;
-		$("#divlogin").remove();
 	    }
 	}
         while (skeys.length >= secret.split(',').length) {
